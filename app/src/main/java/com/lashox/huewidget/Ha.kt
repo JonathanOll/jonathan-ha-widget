@@ -11,13 +11,21 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * Monotonic clock (ms) used for deadlines, debounce and throttling. Always
+ * [SystemClock.elapsedRealtime] in the app; tests may swap it (Robolectric freezes SystemClock).
+ */
+internal object HaClock {
+    @Volatile var now: () -> Long = { SystemClock.elapsedRealtime() }
+}
+
 /** Absolute time limit for a chain of HTTP calls (monotonic clock). */
 class Deadline private constructor(private val atMs: Long) {
-    fun remainingMs(): Long = atMs - SystemClock.elapsedRealtime()
+    fun remainingMs(): Long = atMs - HaClock.now()
     val expired: Boolean get() = remainingMs() <= 0
 
     companion object {
-        fun after(ms: Long) = Deadline(SystemClock.elapsedRealtime() + ms)
+        fun after(ms: Long) = Deadline(HaClock.now() + ms)
     }
 }
 
@@ -202,7 +210,7 @@ object Ha {
 
     /** Throttled toast: several parallel failures -> one message. */
     fun toast(c: Context, msg: String) {
-        val now = SystemClock.elapsedRealtime()
+        val now = HaClock.now()
         val prev = lastToast.get()
         if (now - prev < 2000 || !lastToast.compareAndSet(prev, now)) return
         val app = c.applicationContext

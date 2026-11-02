@@ -3,7 +3,6 @@ package com.lashox.huewidget
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.SystemClock
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,7 +18,7 @@ object Actions {
     @Volatile private var lastTileFetch = 0L
 
     /** true if the same action was accepted less than 1 s ago (the tap is then ignored). */
-    fun debounced(action: String): Boolean = debouncer.hit(action, SystemClock.elapsedRealtime())
+    fun debounced(action: String): Boolean = debouncer.hit(action, HaClock.now())
 
     /** Sends [action] to the non-exported [ActionReceiver] (used by tiles and the confirm dialog). */
     fun send(c: Context, action: String) {
@@ -28,7 +27,7 @@ object Actions {
 
     /** Tiles: ask for a state refresh unless one was requested a few seconds ago. */
     fun requestTileRefresh(c: Context) {
-        val now = SystemClock.elapsedRealtime()
+        val now = HaClock.now()
         if (now - lastTileFetch < Budget.TILE_REFETCH_MS) return
         lastTileFetch = now
         send(c, Act.TILE_REFRESH)
@@ -48,7 +47,7 @@ object Actions {
                     HaLog.w("action failed", e)
                 } finally {
                     // states were just read: the tile redraw below must not trigger another fetch
-                    lastTileFetch = SystemClock.elapsedRealtime()
+                    lastTileFetch = HaClock.now()
                     try { Widgets.refreshAll(app) } catch (e: Exception) { HaLog.w("refreshAll failed", e) }
                     pending?.finish()
                 }

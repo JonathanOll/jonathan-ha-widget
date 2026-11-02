@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests, lint et build debug
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Tests unitaires, lint, build debug
+        run: |
+          chmod +x gradlew
+          ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
+
+      - name: Rapports de tests et lint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: ignore
+
+      - name: APK debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  release:
+    # On a "v*" tag: publish a GitHub release with the debug APK (installable, no secret needed).
+    name: Release (APK debug)
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-debug
+
+      - name: Créer la release GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mv app-debug.apk "jonathan-ha-widget-${GITHUB_REF_NAME}-debug.apk"
+          gh release create "$GITHUB_REF_NAME" "jonathan-ha-widget-${GITHUB_REF_NAME}-debug.apk" \
+            --title "$GITHUB_REF_NAME" --generate-notes \
+            --notes "APK debug : installable directement (autoriser les sources inconnues). Il est signé avec une clé de debug générée par la CI : si une autre version est déjà installée (build local ou release précédente), désinstalle-la d'abord."
