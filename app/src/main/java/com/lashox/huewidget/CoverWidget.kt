@@ -33,6 +33,7 @@ class CoverWidget : AppWidgetProvider() {
                 Ha.cover(context, service)
             } catch (e: Exception) {
                 android.util.Log.e("HueWidget", "cover failed", e)
+                Ha.toast(context, e)
             } finally {
                 pending.finish()
             }

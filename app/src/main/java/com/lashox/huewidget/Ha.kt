@@ -30,12 +30,12 @@ object Ha {
             .putString("pc_state", pcState.trim()).putString("thermo", thermo.trim()).putString("hum", hum.trim()).apply()
     fun saveCover(c: Context, entity: String) = prefs(c).edit().putString("cover", entity.trim()).apply()
 
-    private fun call(c: Context, method: String, path: String, body: String? = null): String {
+    private fun call(c: Context, method: String, path: String, body: String? = null, strict: Boolean = false): String {
         Log.d("HueWidget", method + " " + url(c) + path)
         val conn = URL(url(c) + path).openConnection() as HttpURLConnection
         try {
             conn.requestMethod = method
-            conn.connectTimeout = 10000
+            conn.connectTimeout = 4000
             conn.readTimeout = 15000
             conn.setRequestProperty("Authorization", "Bearer " + token(c))
             conn.setRequestProperty("Content-Type", "application/json")
@@ -44,6 +44,7 @@ object Ha {
                 conn.outputStream.use { it.write(body.toByteArray()) }
             }
             val code = conn.responseCode
+            if (strict && code !in 200..299) throw HaHttpException(code)
             Log.d("HueWidget", "HTTP " + code + " for " + path)
             return (if (code in 200..299) conn.inputStream else conn.errorStream).bufferedReader().use { it.readText() }
         } finally {
@@ -84,14 +85,14 @@ object Ha {
         val url = "/api/services/$path"
         val body = "{\"entity_id\":\"" + entityId + "\"}"
         try {
-            call(c, "POST", url, body)
+            call(c, "POST", url, body, true)
         } catch (e: java.net.ConnectException) {
             Log.w("HueWidget", "connect failed, retry once")
-            call(c, "POST", url, body)
+            call(c, "POST", url, body, true)
         } catch (e: java.net.SocketTimeoutException) {
             if (e.message?.startsWith("failed to connect") == true) {
                 Log.w("HueWidget", "connect timeout, retry once")
-                call(c, "POST", url, body)
+                call(c, "POST", url, body, true)
             } else throw e
         }
     }
@@ -121,6 +122,28 @@ object Ha {
         null
     }
 
+    private var lastToast = 0L
+
+    /** Short user-visible message for a failed action (e.g. HA unreachable). Safe from any thread. */
+    fun toast(c: Context, e: Exception) {
+        val msg = when {
+            e is HaHttpException && (e.code == 401 || e.code == 403) -> "Token Home Assistant refus\u00e9"
+            e is HaHttpException && e.code == 404 -> "Entit\u00e9 introuvable dans Home Assistant"
+            e is HaHttpException -> "Erreur Home Assistant (" + e.code + ")"
+            e is java.net.ConnectException || e is java.net.SocketTimeoutException ||
+                e is java.net.UnknownHostException || e is java.net.NoRouteToHostException ->
+                "Home Assistant injoignable (Wi-Fi ?)"
+            else -> "Erreur : " + (e.message ?: e.javaClass.simpleName)
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastToast < 2000) return // several parallel failures -> one message
+        lastToast = now
+        val app = c.applicationContext
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            android.widget.Toast.makeText(app, msg, android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
     /** All HA entities as (entity_id, friendly_name), for autocomplete. Empty on error. */
     fun fetchEntities(url: String, token: String): List<Pair<String, String>> = try {
         val conn = URL(url.trim().trimEnd('/') + "/api/states").openConnection() as HttpURLConnection
@@ -136,3 +159,6 @@ object Ha {
         } finally { conn.disconnect() }
     } catch (e: Exception) { Log.w("HueWidget", "fetchEntities failed: " + e); emptyList() }
 }
+
+/** HA answered with a non-2xx status. */
+class HaHttpException(val code: Int) : java.io.IOException("HTTP " + code)

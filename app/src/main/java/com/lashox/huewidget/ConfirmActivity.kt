@@ -77,6 +77,7 @@ class ConfirmActivity : ComponentActivity() {
                 Ha.trigger(c, id)
             } catch (e: Exception) {
                 Log.e("HueWidget", "pc action failed", e)
+                Ha.toast(c, e)
             }
             Thread.sleep(3000)
             val mgr = AppWidgetManager.getInstance(c)

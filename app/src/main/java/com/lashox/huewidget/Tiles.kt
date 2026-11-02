@@ -25,7 +25,12 @@ abstract class BaseTile : TileService() {
         val wasOn = qsTile?.state == Tile.STATE_ACTIVE
         qsTile?.let { style(it, !wasOn); it.updateTile() }
         thread {
-            try { toggle(c, wasOn) } catch (e: Exception) { Log.e("HueWidget", "tile toggle failed", e) }
+            try { toggle(c, wasOn) } catch (e: Exception) {
+                Log.e("HueWidget", "tile toggle failed", e)
+                Ha.toast(c, e)
+                Handler(Looper.getMainLooper()).post { qsTile?.let { style(it, wasOn); it.updateTile() } }
+                return@thread
+            }
             refresh(1200)
         }
     }
@@ -41,9 +46,9 @@ abstract class BaseTile : TileService() {
         val c = applicationContext
         thread {
             if (delayMs > 0) Thread.sleep(delayMs)
-            val on = read(c)
+            val on = read(c) ?: return@thread // unreachable: keep what the tile shows
             Handler(Looper.getMainLooper()).post {
-                qsTile?.let { style(it, on == true); it.updateTile() }
+                qsTile?.let { style(it, on); it.updateTile() }
             }
         }
     }
@@ -67,7 +72,7 @@ class TvTile : BaseTile() {
     }
 
     override fun toggle(c: Context, currentlyOn: Boolean) {
-        ids(c).map { id -> thread { try { Ha.power(c, id, !currentlyOn) } catch (e: Exception) { Log.e("HueWidget", "tile power $id", e) } } }
+        ids(c).map { id -> thread { try { Ha.power(c, id, !currentlyOn) } catch (e: Exception) { Log.e("HueWidget", "tile power $id", e); Ha.toast(c, e) } } }
             .forEach { it.join() }
     }
 }

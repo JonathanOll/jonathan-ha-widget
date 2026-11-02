@@ -31,7 +31,7 @@ class LightWidget : AppWidgetProvider() {
                 try {
                     val before = Ha.isOn(context)
                     var ok = true
-                    try { Ha.toggle(context) } catch (e: Exception) { ok = false; android.util.Log.e("HueWidget", "toggle failed", e) }
+                    try { Ha.toggle(context) } catch (e: Exception) { ok = false; android.util.Log.e("HueWidget", "toggle failed", e); Ha.toast(context, e) }
                     var after: Boolean? = null
                     if (ok) {
                         // HA/Hue can lag: poll until state differs from before (max ~3.5 s)

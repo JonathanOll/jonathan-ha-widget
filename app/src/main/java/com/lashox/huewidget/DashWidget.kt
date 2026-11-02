@@ -31,6 +31,7 @@ class DashWidget : AppWidgetProvider() {
         val action = intent.action ?: return
         if (action !in ACTIONS) return
         Log.d("HueWidget", "dash $action")
+        appCtx = context.applicationContext
         val mgr = AppWidgetManager.getInstance(context)
         val ids = mgr.getAppWidgetIds(ComponentName(context, DashWidget::class.java))
         val pending = goAsync()
@@ -43,8 +44,10 @@ class DashWidget : AppWidgetProvider() {
         }
     }
 
+    private lateinit var appCtx: Context
+
     private fun safe(what: String, block: () -> Unit) {
-        try { block() } catch (e: Exception) { Log.e("HueWidget", "$what failed", e) }
+        try { block() } catch (e: Exception) { Log.e("HueWidget", "$what failed", e); Ha.toast(appCtx, e) }
     }
 
     private fun handle(c: Context, action: String) {

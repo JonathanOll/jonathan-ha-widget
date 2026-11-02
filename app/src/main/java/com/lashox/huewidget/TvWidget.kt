@@ -51,7 +51,7 @@ class TvWidget : AppWidgetProvider() {
                 targets.map { (id, on) ->
                     thread {
                         try { Ha.power(context, id, on) }
-                        catch (e: Exception) { Log.e("HueWidget", "power failed $id", e) }
+                        catch (e: Exception) { Log.e("HueWidget", "power failed $id", e); Ha.toast(context, e) }
                     }
                 }.forEach { it.join() }
 
