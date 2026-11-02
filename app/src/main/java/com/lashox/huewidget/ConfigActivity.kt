@@ -37,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -61,7 +63,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 internal val HueColors = darkColorScheme(
@@ -145,16 +146,30 @@ private fun ConfigApp(
 
     var entities by remember { mutableStateOf(emptyList<Pair<String, String>>()) }
     var checking by remember { mutableStateOf(false) }
-    LaunchedEffect(url, token) {
+    var urlError by remember { mutableStateOf(urlErrorOf(url)) }
+
+    // The token is only sent on purpose: once at start with the saved config, then on "Tester la connexion".
+    // Never while typing.
+    val canAutoTest = url.isNotBlank() && token.isNotBlank() && urlError == null
+    var probe by remember { mutableStateOf(if (canAutoTest) Probe(1, url, token) else null) }
+    var testedWith by remember { mutableStateOf<Pair<String, String>?>(null) }
+    LaunchedEffect(probe?.id) {
+        val p = probe ?: return@LaunchedEffect
+        checking = true
         entities = emptyList()
-        if (url.isNotBlank() && token.isNotBlank()) {
-            checking = true
-            delay(700)
-            entities = withContext(Dispatchers.IO) { Ha.fetchEntities(url, token) }
-            checking = false
-        }
+        entities = withContext(Dispatchers.IO) { Ha.fetchEntities(p.url, p.token) }
+        testedWith = p.url to p.token
+        checking = false
     }
-    val connected = entities.isNotEmpty()
+    /** The last test was done with the values currently in the fields. */
+    val upToDate = testedWith == (url to token)
+    val connected = upToDate && entities.isNotEmpty()
+
+    fun testConnection() {
+        urlError = urlErrorOf(url)
+        if (urlError != null || url.isBlank() || token.isBlank()) return
+        probe = Probe((probe?.id ?: 0) + 1, url, token)
+    }
 
     val needConnection = Ha.url(c).isBlank() || Ha.token(c).isBlank()
     var screen by remember { mutableStateOf(if (needConnection) Screen.Connection else target ?: Screen.Home) }
@@ -167,8 +182,16 @@ private fun ConfigApp(
         onCommit()
     }
 
+    /** On the Connection page, an invalid or public-http URL is not saved: show the error and stay. */
+    fun connectionValid(): Boolean {
+        if (screen != Screen.Connection) return true
+        urlError = urlErrorOf(url)
+        return urlError == null
+    }
+
     /** Save, then go on: next page in widget mode, otherwise back to the list. */
     fun done() {
+        if (!connectionValid()) return
         commit()
         when {
             widgetMode && target != null && screen == Screen.Connection -> screen = target
@@ -177,41 +200,48 @@ private fun ConfigApp(
         }
     }
 
-    BackHandler(enabled = screen != Screen.Home && (!widgetMode || target == null)) { commit(); screen = Screen.Home }
+    BackHandler(enabled = screen != Screen.Home && (!widgetMode || target == null)) {
+        if (connectionValid()) { commit(); screen = Screen.Home }
+    }
 
     fun ids(vararg d: String) = entities.filter { it.first.substringBefore('.') in d }
 
     when (screen) {
-        Screen.Home -> Page("Jonathan HA Widget", "Contrôle tes appareils via Home Assistant", null) {
+        Screen.Home -> Page(stringResource(R.string.app_name), stringResource(R.string.home_subtitle), null) {
             val status = when {
-                url.isBlank() || token.isBlank() -> "À configurer"
-                checking -> "Vérification…"
-                connected -> "Connecté · ${entities.size} entités"
-                else -> "Injoignable"
+                url.isBlank() || token.isBlank() -> stringResource(R.string.status_to_configure)
+                urlError != null -> stringResource(R.string.status_fix_url)
+                checking -> stringResource(R.string.status_checking)
+                connected -> stringResource(R.string.status_connected, entities.size)
+                !upToDate -> stringResource(R.string.status_not_tested)
+                else -> stringResource(R.string.status_unreachable)
             }
-            NavCard(R.drawable.ic_power, "Home Assistant", status, connected) { screen = Screen.Connection }
-            Label("Appareils")
-            NavCard(R.drawable.ic_bulb, "Lumière", summary(light), light.isNotBlank()) { screen = Screen.Light }
-            NavCard(R.drawable.ic_cover, "Volet", summary(cover), cover.isNotBlank()) { screen = Screen.Cover }
-            NavCard(R.drawable.ic_tv, "Télé + LED", summary(tv, led), tv.isNotBlank() || led.isNotBlank()) { screen = Screen.Tv }
-            NavCard(R.drawable.ic_thermo, "Thermomètre", summary(thermo, hum), thermo.isNotBlank()) { screen = Screen.Thermo }
-            NavCard(R.drawable.ic_pc, "PC", summary(pcOn, pcOff), pcOn.isNotBlank() || pcOff.isNotBlank()) { screen = Screen.Pc }
+            NavCard(R.drawable.ic_power, stringResource(R.string.home_assistant), status, connected) { screen = Screen.Connection }
+            Label(stringResource(R.string.label_devices))
+            NavCard(R.drawable.ic_bulb, stringResource(R.string.light), summary(light), light.isNotBlank()) { screen = Screen.Light }
+            NavCard(R.drawable.ic_cover, stringResource(R.string.cover), summary(cover), cover.isNotBlank()) { screen = Screen.Cover }
+            NavCard(R.drawable.ic_tv, stringResource(R.string.tv_led), summary(tv, led), tv.isNotBlank() || led.isNotBlank()) { screen = Screen.Tv }
+            NavCard(R.drawable.ic_thermo, stringResource(R.string.thermometer), summary(thermo, hum), thermo.isNotBlank()) { screen = Screen.Thermo }
+            NavCard(R.drawable.ic_pc, stringResource(R.string.pc), summary(pcOn, pcOff), pcOn.isNotBlank() || pcOff.isNotBlank()) { screen = Screen.Pc }
             if (widgetMode) {
                 Spacer(Modifier.height(24.dp))
-                SaveButton("Terminer") { commit(); onFinish() }
+                SaveButton(stringResource(R.string.btn_finish)) { commit(); onFinish() }
             }
         }
 
-        Screen.Connection -> Page("Home Assistant", "Adresse et accès", if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
+        Screen.Connection -> Page(
+            stringResource(R.string.home_assistant), stringResource(R.string.conn_subtitle),
+            if (widgetMode && target != null) null else ({ if (connectionValid()) { commit(); screen = Screen.Home } })
+        ) {
             Panel {
-                Field(url, "URL (ex: http://192.168.1.10:8123)", { url = it }, KeyboardType.Uri, top = false)
-                Field(token, "Token longue durée", { token = it }, secret = true)
+                Field(url, stringResource(R.string.field_url), { url = it; urlError = null }, KeyboardType.Uri, top = false, error = urlError?.let { stringResource(it) })
+                Field(token, stringResource(R.string.field_token), { token = it }, secret = true)
             }
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
                 Box(Modifier.size(10.dp).clip(CircleShape).background(
                     when {
-                        url.isBlank() || token.isBlank() || checking -> Color(0xFF8A8D94)
+                        url.isBlank() || token.isBlank() || checking || !upToDate -> Color(0xFF8A8D94)
                         connected -> Color(0xFF66BB6A)
                         else -> Color(0xFFEF5350)
                     }
@@ -219,63 +249,82 @@ private fun ConfigApp(
                 Spacer(Modifier.size(8.dp))
                 Text(
                     when {
-                        url.isBlank() || token.isBlank() -> "Renseigne l'URL et le token"
-                        checking -> "Vérification…"
-                        connected -> "Connecté · ${entities.size} entités trouvées"
-                        else -> "Injoignable (même Wi-Fi que HA ? token valide ?)"
+                        url.isBlank() || token.isBlank() -> stringResource(R.string.conn_fill)
+                        checking -> stringResource(R.string.status_checking)
+                        !upToDate -> stringResource(R.string.conn_not_tested)
+                        connected -> stringResource(R.string.conn_connected, entities.size)
+                        else -> stringResource(R.string.conn_unreachable)
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Spacer(Modifier.height(24.dp))
-            SaveButton("Enregistrer") { done() }
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = { testConnection() },
+                enabled = !checking && url.isNotBlank() && token.isNotBlank(),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(24.dp)
+            ) { Text(stringResource(R.string.btn_test), fontWeight = FontWeight.Bold) }
+            Spacer(Modifier.height(12.dp))
+            SaveButton(stringResource(R.string.btn_save)) { done() }
         }
 
-        Screen.Light -> Page("Lumière", "Ampoule à allumer ou éteindre", if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
-            Panel { EntityField(light, "entity_id (ex: light.salon)", ids("light")) { light = it } }
-            Spacer(Modifier.height(24.dp)); SaveButton("Enregistrer") { done() }
+        Screen.Light -> Page(stringResource(R.string.light), stringResource(R.string.light_subtitle), if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
+            Panel { EntityField(light, stringResource(R.string.light_field), ids("light")) { light = it } }
+            Spacer(Modifier.height(24.dp)); SaveButton(stringResource(R.string.btn_save)) { done() }
         }
 
-        Screen.Cover -> Page("Volet", "Volet roulant (ouvrir, stop, fermer)", if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
-            Panel { EntityField(cover, "entity_id (ex: cover.salon)", ids("cover")) { cover = it } }
-            Spacer(Modifier.height(24.dp)); SaveButton("Enregistrer") { done() }
+        Screen.Cover -> Page(stringResource(R.string.cover), stringResource(R.string.cover_subtitle), if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
+            Panel { EntityField(cover, stringResource(R.string.cover_field), ids("cover")) { cover = it } }
+            Spacer(Modifier.height(24.dp)); SaveButton(stringResource(R.string.btn_save)) { done() }
         }
 
-        Screen.Tv -> Page("Télé + LED", "Les deux prises de la télé", if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
+        Screen.Tv -> Page(stringResource(R.string.tv_led), stringResource(R.string.tv_subtitle), if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
             Panel {
-                EntityField(tv, "Prise de la télé (ex: switch.tv)", ids("switch", "light"), top = false) { tv = it }
-                EntityField(led, "Prise des LED (ex: switch.led_tv)", ids("switch", "light")) { led = it }
+                EntityField(tv, stringResource(R.string.tv_field), ids("switch", "light"), top = false) { tv = it }
+                EntityField(led, stringResource(R.string.led_field), ids("switch", "light")) { led = it }
             }
-            Hint("Le gros bouton suit l'état de la télé. Les deux prises doivent être différentes.")
-            Spacer(Modifier.height(24.dp)); SaveButton("Enregistrer") { done() }
+            Hint(stringResource(R.string.tv_hint))
+            Spacer(Modifier.height(24.dp)); SaveButton(stringResource(R.string.btn_save)) { done() }
         }
 
-        Screen.Thermo -> Page("Thermomètre", "Capteurs de la pièce", if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
+        Screen.Thermo -> Page(stringResource(R.string.thermometer), stringResource(R.string.thermo_subtitle), if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
             Panel {
-                EntityField(thermo, "Température (ex: sensor.chambre_temperature)", ids("sensor"), top = false) { thermo = it }
-                EntityField(hum, "Humidité (optionnel)", ids("sensor")) { hum = it }
+                EntityField(thermo, stringResource(R.string.thermo_field), ids("sensor"), top = false) { thermo = it }
+                EntityField(hum, stringResource(R.string.hum_field), ids("sensor")) { hum = it }
             }
-            Spacer(Modifier.height(24.dp)); SaveButton("Enregistrer") { done() }
+            Spacer(Modifier.height(24.dp)); SaveButton(stringResource(R.string.btn_save)) { done() }
         }
 
-        Screen.Pc -> Page("PC", "Allumer ou éteindre, avec confirmation", if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
+        Screen.Pc -> Page(stringResource(R.string.pc), stringResource(R.string.pc_subtitle), if (widgetMode && target != null) null else ({ commit(); screen = Screen.Home })) {
             val actions = ids("switch", "button", "script", "scene", "input_boolean", "input_button", "light")
             Panel {
-                EntityField(pcOn, "Pour allumer (ex: button.pc_on)", actions, top = false) { pcOn = it }
-                EntityField(pcOff, "Pour éteindre (ex: button.pc_off)", actions) { pcOff = it }
+                EntityField(pcOn, stringResource(R.string.pc_on_field), actions, top = false) { pcOn = it }
+                EntityField(pcOff, stringResource(R.string.pc_off_field), actions) { pcOff = it }
                 EntityField(
-                    pcState, "Capteur d'état (ex: sensor.pc_cpu)",
+                    pcState, stringResource(R.string.pc_state_field),
                     ids("sensor", "binary_sensor", "switch", "device_tracker", "input_boolean", "light")
                 ) { pcState = it }
             }
-            Hint("Le capteur d'état sert à savoir si le PC est allumé : indisponible ou inconnu = éteint (ex: la charge CPU).")
-            Spacer(Modifier.height(24.dp)); SaveButton("Enregistrer") { done() }
+            Hint(stringResource(R.string.pc_hint))
+            Spacer(Modifier.height(24.dp)); SaveButton(stringResource(R.string.btn_save)) { done() }
         }
     }
 }
 
+/** One explicit connection test (a new [id] relaunches it, even with the same values). */
+private class Probe(val id: Int, val url: String, val token: String)
+
+/** Inline error (string resource) for the URL field, or null if it can be used (blank = not configured yet, no error). */
+private fun urlErrorOf(url: String): Int? = if (url.isBlank()) null else when (checkHaUrl(url)) {
+    UrlCheck.OK -> null
+    UrlCheck.INVALID -> R.string.url_invalid
+    UrlCheck.INSECURE_PUBLIC -> R.string.url_insecure
+}
+
+@Composable
 private fun summary(vararg ids: String): String =
-    ids.filter { it.isNotBlank() }.joinToString(" · ").ifEmpty { "À configurer" }
+    ids.filter { it.isNotBlank() }.joinToString(" · ").ifEmpty { stringResource(R.string.status_to_configure) }
 
 @Composable
 private fun Page(title: String, subtitle: String, onBack: (() -> Unit)?, content: @Composable () -> Unit) {
@@ -285,7 +334,7 @@ private fun Page(title: String, subtitle: String, onBack: (() -> Unit)?, content
     ) {
         if (onBack != null) {
             Text(
-                "‹ Retour", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold,
+                stringResource(R.string.back), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold,
                 modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { onBack() }.padding(vertical = 8.dp, horizontal = 4.dp)
             )
         }
@@ -345,7 +394,7 @@ private fun NavCard(icon: Int, title: String, summary: String, ok: Boolean, onCl
                 color = if (ok) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFFFF8A65)
             )
         }
-        Text("›", fontSize = 26.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.chevron), fontSize = 26.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -362,12 +411,15 @@ private fun SaveButton(text: String, onClick: () -> Unit) {
 @Composable
 private fun Field(
     value: String, label: String, onChange: (String) -> Unit,
-    keyboard: KeyboardType = KeyboardType.Text, secret: Boolean = false, top: Boolean = true
+    keyboard: KeyboardType = KeyboardType.Text, secret: Boolean = false, top: Boolean = true,
+    error: String? = null
 ) {
     OutlinedTextField(
         value, onChange,
         Modifier.fillMaxWidth().padding(top = if (top) 12.dp else 0.dp),
         label = { Text(label) }, singleLine = true, shape = RoundedCornerShape(16.dp),
+        isError = error != null,
+        supportingText = error?.let { { Text(it) } },
         keyboardOptions = KeyboardOptions(keyboardType = keyboard),
         visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None
     )

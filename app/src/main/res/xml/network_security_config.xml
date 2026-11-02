@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cleartext HTTP is allowed at the platform level because the Home Assistant
+    URL is typed by the user at runtime and is usually a LAN address such as
+    http://192.168.1.10:8123 (HA serves plain HTTP on the LAN by default).
+    A build-time domain whitelist cannot know that address.
+
+    The real guard is in code: Ha.kt refuses to send the token over http://
+    unless the host is local (private IPv4, loopback, link-local, IPv6 ULA,
+    *.local / *.lan / *.home.arpa, localhost) - see isLocalHost() in Logic.kt.
+    Public addresses must use https://.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

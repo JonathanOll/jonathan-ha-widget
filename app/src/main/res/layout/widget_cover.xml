@@ -15,7 +15,7 @@
         android:padding="12dp"
         android:src="@drawable/ic_up"
         android:tint="#E6E6E9"
-        android:contentDescription="Ouvrir" />
+        android:contentDescription="@string/cover_open" />
     <ImageView
         android:id="@+id/btn_stop"
         android:layout_width="0dp"
@@ -26,7 +26,7 @@
         android:padding="12dp"
         android:src="@drawable/ic_stop"
         android:tint="#FF8A65"
-        android:contentDescription="Stop" />
+        android:contentDescription="@string/cover_stop" />
     <ImageView
         android:id="@+id/btn_down"
         android:layout_width="0dp"
@@ -37,5 +37,5 @@
         android:padding="12dp"
         android:src="@drawable/ic_down"
         android:tint="#E6E6E9"
-        android:contentDescription="Fermer" />
+        android:contentDescription="@string/cover_close" />
 </LinearLayout>

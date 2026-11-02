@@ -21,12 +21,12 @@
             android:layout_width="26dp"
             android:layout_height="26dp"
             android:src="@drawable/ic_power"
-            android:contentDescription="Tout" />
+            android:contentDescription="@string/all" />
         <TextView
             android:id="@+id/l_all"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tout"
+            android:text="@string/all"
             android:textColor="#9A9CA3"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -46,12 +46,12 @@
             android:layout_width="26dp"
             android:layout_height="26dp"
             android:src="@drawable/ic_tv"
-            android:contentDescription="Télé" />
+            android:contentDescription="@string/tv" />
         <TextView
             android:id="@+id/l_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Télé"
+            android:text="@string/tv"
             android:textColor="#9A9CA3"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -71,12 +71,12 @@
             android:layout_width="26dp"
             android:layout_height="26dp"
             android:src="@drawable/ic_led"
-            android:contentDescription="LED" />
+            android:contentDescription="@string/led" />
         <TextView
             android:id="@+id/l_led"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="LED"
+            android:text="@string/led"
             android:textColor="#9A9CA3"
             android:textSize="11sp"
             android:textStyle="bold" />

@@ -5,3 +5,11 @@ local.properties
 .idea/
 *.iml
 .kotlin/
+
+# Signing keys / secrets: never commit
+*.jks
+*.keystore
+*.p12
+keystore.properties
+signing.properties
+*.env

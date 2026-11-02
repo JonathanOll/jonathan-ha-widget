@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_marginTop="6dp"
-        android:text="ÉCLAIRAGE &amp; PC"
+        android:text="@string/dash_section_light_pc"
         android:textColor="#B3FFC107"
         android:textSize="10sp"
         android:textStyle="bold" />
@@ -75,11 +75,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_bulb"
-                android:contentDescription="Lumière" />
+                android:contentDescription="@string/light" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lumière"
+                android:text="@string/light"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -105,11 +105,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_pc"
-                android:contentDescription="PC" />
+                android:contentDescription="@string/pc" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PC"
+                android:text="@string/pc"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -126,7 +126,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_marginTop="6dp"
-        android:text="VOLET"
+        android:text="@string/dash_section_cover"
         android:textColor="#B3FFC107"
         android:textSize="10sp"
         android:textStyle="bold" />
@@ -150,11 +150,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_up"
-                android:contentDescription="Ouvrir" />
+                android:contentDescription="@string/cover_open" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ouvrir"
+                android:text="@string/cover_open"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -174,11 +174,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_stop"
-                android:contentDescription="Stop" />
+                android:contentDescription="@string/cover_stop" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Stop"
+                android:text="@string/cover_stop"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -198,11 +198,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_down"
-                android:contentDescription="Fermer" />
+                android:contentDescription="@string/cover_close" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Fermer"
+                android:text="@string/cover_close"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -213,7 +213,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_marginTop="6dp"
-        android:text="TÉLÉ"
+        android:text="@string/dash_section_tv"
         android:textColor="#B3FFC107"
         android:textSize="10sp"
         android:textStyle="bold" />
@@ -237,11 +237,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_power"
-                android:contentDescription="Tout" />
+                android:contentDescription="@string/all" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tout"
+                android:text="@string/all"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -267,11 +267,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_tv"
-                android:contentDescription="Télé" />
+                android:contentDescription="@string/tv" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Télé"
+                android:text="@string/tv"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -297,11 +297,11 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_led"
-                android:contentDescription="LED" />
+                android:contentDescription="@string/led" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LED"
+                android:text="@string/led"
                 android:textColor="#E6E6E9"
                 android:textSize="11sp"
                 android:textStyle="bold" />

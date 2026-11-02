@@ -1,9 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App, widgets and tiles (manifest labels) -->
+    <string name="app_name">Jonathan HA Widget</string>
+    <string name="widget_light">Lumière</string>
+    <string name="widget_cover">Volet</string>
+    <string name="widget_tv">Télé + LED</string>
+    <string name="widget_thermo">Thermomètre</string>
+    <string name="widget_pc">PC</string>
+    <string name="widget_dash">Tableau de bord</string>
+    <string name="tile_light">Lumière</string>
+    <string name="tile_tv">Télé</string>
+    <string name="tile_tv_label">Télé + LED</string>
+
+    <!-- Widget picker descriptions -->
     <string name="desc_widget_info">Allume ou éteint la lumière. Icône jaune quand elle est allumée.</string>
     <string name="desc_widget_info_cover">Ouvrir, arrêter ou fermer le volet.</string>
     <string name="desc_widget_info_tv">Allume ou éteint la télé et les LED, ensemble ou séparément.</string>
     <string name="desc_widget_info_thermo">Température et humidité de la chambre. Appuyer pour actualiser.</string>
     <string name="desc_widget_info_pc">Allume ou éteint le PC, avec confirmation.</string>
     <string name="desc_widget_info_dash">Tout en un : thermomètre, lumière, PC, volet, télé et LED.</string>
+
+    <!-- Widget layouts -->
+    <string name="light">Lumière</string>
+    <string name="pc">PC</string>
+    <string name="tv">Télé</string>
+    <string name="led">LED</string>
+    <string name="all">Tout</string>
+    <string name="cover_open">Ouvrir</string>
+    <string name="cover_stop">Stop</string>
+    <string name="cover_close">Fermer</string>
+    <string name="dash_section_light_pc">ÉCLAIRAGE &amp; PC</string>
+    <string name="dash_section_cover">VOLET</string>
+    <string name="dash_section_tv">TÉLÉ</string>
+
+    <!-- Widget states (short, capitalized) -->
+    <string name="state_on_m">Allumé</string>
+    <string name="state_off_m">Éteint</string>
+    <string name="state_on_f">Allumée</string>
+    <string name="state_off_f">Éteinte</string>
+    <string name="state_on_fp">Allumées</string>
+    <string name="state_off_fp">Éteintes</string>
+    <string name="state_tap">Appuyer</string>
+    <string name="state_all_on">Tout allumé</string>
+    <string name="state_tv_only">Télé seule</string>
+    <string name="state_led_only">LED seules</string>
+    <string name="state_all_off">Tout éteint</string>
+
+    <!-- On/off words used inside spoken descriptions -->
+    <string name="onoff_on_m">allumé</string>
+    <string name="onoff_off_m">éteint</string>
+    <string name="onoff_on_f">allumée</string>
+    <string name="onoff_off_f">éteinte</string>
+    <string name="onoff_on_mp">allumés</string>
+    <string name="onoff_off_mp">éteints</string>
+    <string name="onoff_on_fp">allumées</string>
+    <string name="onoff_off_fp">éteintes</string>
+
+    <!-- Widget accessibility descriptions -->
+    <string name="a11y_name_state">%1$s, %2$s</string>
+    <string name="a11y_cover_open">Ouvrir le volet</string>
+    <string name="a11y_cover_stop">Arrêter le volet</string>
+    <string name="a11y_cover_close">Fermer le volet</string>
+    <string name="a11y_tv_all">Télé et LED, télé %1$s</string>
+    <string name="a11y_thermo">%1$s, %2$s</string>
+    <string name="a11y_thermo_degrees">%1$.1f degrés</string>
+    <string name="a11y_thermo_unknown">température inconnue</string>
+    <string name="a11y_thermo_hum">, humidité %1$s</string>
+    <string name="a11y_thermo_refresh">%1$s, actualiser</string>
+    <string name="thermo_default_label">Température</string>
+
+    <!-- Toasts -->
+    <string name="err_insecure_url">Connexion non chiffrée refusée : utilise https:// pour une adresse publique</string>
+    <string name="err_token_refused">Token Home Assistant refusé</string>
+    <string name="err_entity_not_found">Entité introuvable dans Home Assistant</string>
+    <string name="err_ha_http">Erreur Home Assistant (%1$d)</string>
+    <string name="err_unreachable">Home Assistant injoignable (Wi-Fi ?)</string>
+    <string name="err_generic">Erreur : %1$s</string>
+    <string name="err_tv_state_unknown">État de la télé inconnu</string>
+
+    <!-- PC confirmation dialog -->
+    <string name="confirm_pc_off_title">Éteindre le PC ?</string>
+    <string name="confirm_pc_on_title">Allumer le PC ?</string>
+    <string name="confirm_no_entity">Aucune entité PC configurée dans l\'app.</string>
+    <string name="confirm_loading">Lecture de l\'état du PC…</string>
+    <string name="confirm_question">Que veux-tu faire ?</string>
+    <string name="action_off">Éteindre</string>
+    <string name="action_on">Allumer</string>
+    <string name="action_cancel">Annuler</string>
+
+    <!-- Settings screen -->
+    <string name="home_subtitle">Contrôle tes appareils via Home Assistant</string>
+    <string name="status_to_configure">À configurer</string>
+    <string name="status_fix_url">Adresse à corriger</string>
+    <string name="status_checking">Vérification…</string>
+    <string name="status_connected">Connecté · %1$d entités</string>
+    <string name="status_not_tested">Non testé</string>
+    <string name="status_unreachable">Injoignable</string>
+    <string name="home_assistant">Home Assistant</string>
+    <string name="label_devices">Appareils</string>
+    <string name="tv_led">Télé + LED</string>
+    <string name="thermometer">Thermomètre</string>
+    <string name="cover">Volet</string>
+    <string name="btn_finish">Terminer</string>
+    <string name="btn_save">Enregistrer</string>
+    <string name="btn_test">Tester la connexion</string>
+    <string name="back">‹ Retour</string>
+    <string name="chevron" translatable="false">›</string>
+
+    <string name="conn_subtitle">Adresse et accès</string>
+    <string name="field_url">URL (ex: http://192.168.1.10:8123)</string>
+    <string name="field_token">Token longue durée</string>
+    <string name="conn_fill">Renseigne l\'URL et le token</string>
+    <string name="conn_not_tested">Non testé : appuie sur « Tester la connexion »</string>
+    <string name="conn_connected">Connecté · %1$d entités trouvées</string>
+    <string name="conn_unreachable">Injoignable (même Wi-Fi que HA ? token valide ?)</string>
+    <string name="url_invalid">URL invalide (ex: http://192.168.1.10:8123)</string>
+    <string name="url_insecure">Adresse publique : utilise https://</string>
+
+    <string name="light_subtitle">Ampoule à allumer ou éteindre</string>
+    <string name="light_field">entity_id (ex: light.salon)</string>
+    <string name="cover_subtitle">Volet roulant (ouvrir, stop, fermer)</string>
+    <string name="cover_field">entity_id (ex: cover.salon)</string>
+    <string name="tv_subtitle">Les deux prises de la télé</string>
+    <string name="tv_field">Prise de la télé (ex: switch.tv)</string>
+    <string name="led_field">Prise des LED (ex: switch.led_tv)</string>
+    <string name="tv_hint">Le gros bouton suit l\'état de la télé. Les deux prises doivent être différentes.</string>
+    <string name="thermo_subtitle">Capteurs de la pièce</string>
+    <string name="thermo_field">Température (ex: sensor.chambre_temperature)</string>
+    <string name="hum_field">Humidité (optionnel)</string>
+    <string name="pc_subtitle">Allumer ou éteindre, avec confirmation</string>
+    <string name="pc_on_field">Pour allumer (ex: button.pc_on)</string>
+    <string name="pc_off_field">Pour éteindre (ex: button.pc_off)</string>
+    <string name="pc_state_field">Capteur d\'état (ex: sensor.pc_cpu)</string>
+    <string name="pc_hint">Le capteur d\'état sert à savoir si le PC est allumé : indisponible ou inconnu = éteint (ex: la charge CPU).</string>
 </resources>

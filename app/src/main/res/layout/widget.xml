@@ -14,5 +14,5 @@
         android:scaleType="fitCenter"
         
         android:src="@drawable/ic_bulb"
-        android:contentDescription="Lumière" />
+        android:contentDescription="@string/light" />
 </FrameLayout>

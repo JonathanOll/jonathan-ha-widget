@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 6-11 (fullBackupContent): never back up the preferences file that
+    holds the Home Assistant token. allowBackup="false" already disables backups;
+    this is a second line of defense.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="ha.xml" />
+</full-backup-content>

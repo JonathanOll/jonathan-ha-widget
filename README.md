@@ -54,6 +54,22 @@ Puis :
 
 L'APK est généré dans `app/build/outputs/apk/debug/app-debug.apk`.
 
+### Version release
+
+```bash
+./gradlew assembleRelease
+```
+
+La release est réduite et optimisée par R8 (`isMinifyEnabled`, `isShrinkResources`, règles dans `app/proguard-rules.pro`). Pour la signer, copie `keystore.properties.example` en `keystore.properties` à la racine et remplis `storeFile`, `storePassword`, `keyAlias`, `keyPassword`. Ce fichier et les keystores (`*.jks`, `*.keystore`) sont ignorés par git. Sans `keystore.properties`, le build fonctionne quand même et produit un APK **non signé** (`app/build/outputs/apk/release/app-release-unsigned.apk`).
+
+### Tests
+
+```bash
+./gradlew testDebugUnitTest
+```
+
+Tests JUnit sur la JVM (`app/src/test/`) pour la logique pure de `Logic.kt` : validation de l'URL et détection des adresses locales, cible des actions Télé + LED, seuils de température, lecture des états HA, anti-rebond.
+
 ### Installer sur le téléphone
 
 Avec le débogage USB ou sans fil activé :
@@ -88,7 +104,15 @@ Si les widgets mettent du temps à réagir quand l'écran est éteint, désactiv
 
 ```
 app/src/main/java/com/lashox/huewidget/
-├── Ha.kt               Client HTTP de l'API REST HA + configuration (SharedPreferences)
+├── Ha.kt               Client HTTP de l'API REST HA (délai global, pas de redirection) + configuration
+├── HaRepository.kt     Lectures d'état en parallèle, cache du dernier état connu, logique des actions
+├── Actions.kt          File unique des actions (un seul thread), anti-rebond, rafraîchissements
+├── ActionReceiver.kt   Récepteur non exporté de tous les clics (widgets, tuiles, confirmation PC)
+├── Widgets.kt          Redessine tous les widgets et tuiles, construit les PendingIntent
+├── Logic.kt            Logique pure testable (URL locale, cibles Télé + LED, seuils, états)
+├── Constants.kt        Clés de préférences, couleurs, seuils, budgets de temps, actions
+├── HaLog.kt            Logs (détaillés en debug, sans URL ni entity_id en release)
+├── TokenStore.kt       Chiffrement du jeton avec une clé de l'Android Keystore
 ├── ConfigActivity.kt   Écran de réglages Compose (accueil + une page par appareil, autocomplétion)
 ├── ConfirmActivity.kt  Boîte de confirmation pour allumer / éteindre le PC
 ├── LightWidget.kt      Widget Lumière
@@ -101,15 +125,22 @@ app/src/main/java/com/lashox/huewidget/
 └── MainActivity.kt     Point d'entrée (lanceur) : réutilise l'écran de réglages
 ```
 
-Les widgets utilisent des `RemoteViews` classiques (layouts dans `res/layout`, descripteurs dans `res/xml`). Chaque action réseau part dans un thread, avec `goAsync()` pour garder le récepteur en vie, puis le widget est redessiné avec l'état relu depuis HA.
+Les widgets utilisent des `RemoteViews` classiques (layouts dans `res/layout`, descripteurs dans `res/xml`). Tous les textes visibles sont dans `res/values/strings.xml`. Chaque clic passe par `ActionReceiver`, qui garde le récepteur en vie avec `goAsync()` et confie le travail à la file de `Actions` avec un budget d'environ 8 s. À la fin de chaque action, tous les widgets et tuiles sont redessinés depuis le cache.
 
 ## Sécurité : à lire avant d'utiliser sur un réseau non maîtrisé
 
-Ce projet est conçu pour un usage domestique sur un réseau de confiance. Limites connues :
+Ce projet est conçu pour un usage domestique sur un réseau de confiance. Ce qui est en place :
 
-- Le jeton HA est stocké **en clair** dans les préférences de l'app, et la sauvegarde Android n'est pas désactivée.
-- Le trafic en HTTP clair est autorisé (`usesCleartextTraffic`), pour pouvoir viser une adresse locale en `http://`. Sur un réseau partagé, le jeton peut être lu en transit. Préfère HTTPS si ton HA l'expose.
-- Les actions des widgets sont reçues par des composants exportés : une autre app installée sur le téléphone peut en théorie les déclencher.
+- Le jeton HA est **chiffré** (AES-GCM) avec une clé qui reste dans l'Android Keystore. Un ancien jeton stocké en clair est migré automatiquement.
+- La sauvegarde Android (cloud et transfert d'appareil) est désactivée.
+- Le HTTP en clair n'est accepté que vers une **adresse locale** (IP privée, `localhost`, `*.local`, `*.lan`, `*.home.arpa`…). Une URL `http://` vers une adresse publique est refusée : utilise `https://`.
+- Les redirections HTTP ne sont pas suivies, pour ne jamais envoyer le jeton vers un autre hôte.
+- Les clics des widgets, des tuiles et de la confirmation PC passent par un récepteur **non exporté** : les autres apps ne peuvent pas les déclencher.
+- En release, les logs ne contiennent ni URL, ni `entity_id`, ni jeton.
+
+Limites connues :
+
+- En `http://` sur le réseau local, le jeton circule en clair : sur un réseau partagé, il peut être lu en transit. Préfère HTTPS si ton HA l'expose.
 - Les tuiles de Réglages rapides peuvent être accessibles depuis l'écran verrouillé, selon la configuration du téléphone : quelqu'un qui tient ton téléphone pourrait allumer ou éteindre tes appareils. Le PC n'a volontairement pas de tuile.
 
 N'utilise jamais ton jeton ailleurs que dans l'app, et révoque-le dans HA si tu perds le téléphone.
@@ -121,13 +152,12 @@ N'utilise jamais ton jeton ailleurs que dans l'app, et révoque-le dans HA si tu
 - **« Entité introuvable »** : l'`entity_id` n'existe pas (ou plus) dans HA.
 - **Le widget n'a pas changé après une mise à jour de l'app** : retire-le et remets-le.
 - **L'icône de l'app est restée l'ancienne** : le lanceur la garde en cache, redémarre-le.
-- Les logs de l'app sont filtrables avec `adb logcat -s HueWidget`.
+- **« Connexion non chiffrée refusée »** : l'URL est en `http://` vers une adresse publique. Utilise `https://`, ou l'adresse locale de HA.
+- **Plus de connexion après une restauration ou un changement de téléphone** : le jeton chiffré ne peut pas être relu sur un autre appareil. Ressaisis-le.
+- Les logs de l'app sont filtrables avec `adb logcat -s HueWidget` (détaillés seulement en debug).
 
 ## Pistes d'amélioration
 
-- Budget de temps global et lectures en parallèle pour rester sous la limite d'Android pour les widgets.
-- Une file unique pour les actions et un anti-rebond contre les doubles appuis.
-- Un récepteur non exporté pour les clics, chiffrement du jeton, HTTP en clair limité à l'adresse de HA.
-- Mise à jour de tous les widgets après chaque action, et état du PC plus fiable (distinguer « éteint » d'une erreur d'authentification).
-- Textes dans `strings.xml`, tests unitaires, configuration de build release.
 - Une URL externe de secours (Nabu Casa, DuckDNS) pour les widgets hors du Wi-Fi.
+- Un panneau Edge Samsung (Edge panel) en plus des widgets.
+- Un rafraîchissement plus fréquent que toutes les 30 minutes (limite de `updatePeriodMillis`), par exemple via WorkManager ou l'API WebSocket de HA.

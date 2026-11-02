@@ -14,7 +14,7 @@
         android:background="@drawable/bg_circle_off"
         android:padding="10dp"
         android:src="@drawable/ic_pc"
-        android:contentDescription="PC" />
+        android:contentDescription="@string/pc" />
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="PC"
+            android:text="@string/pc"
             android:textColor="#FFFFFF"
             android:textSize="17sp"
             android:textStyle="bold" />
