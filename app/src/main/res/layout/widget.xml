@@ -4,10 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_widget_off"
-    android:padding="16dp">
+    android:padding="8dp">
     <ImageView
         android:id="@+id/icon"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/ic_bulb" />
+        android:background="@drawable/bg_pill_off"
+        android:padding="12dp"
+        android:scaleType="fitCenter"
+        
+        android:src="@drawable/ic_bulb"
+        android:contentDescription="Lumière" />
 </FrameLayout>

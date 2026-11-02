@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:background="@drawable/bg_widget_off"
-    android:padding="10dp">
+    android:padding="8dp">
     <ImageView
         android:id="@+id/btn_up"
         android:layout_width="0dp"
@@ -12,8 +12,9 @@
         android:layout_weight="1"
         android:layout_margin="4dp"
         android:background="@drawable/bg_btn"
-        android:padding="10dp"
+        android:padding="12dp"
         android:src="@drawable/ic_up"
+        android:tint="#E6E6E9"
         android:contentDescription="Ouvrir" />
     <ImageView
         android:id="@+id/btn_stop"
@@ -22,8 +23,9 @@
         android:layout_weight="1"
         android:layout_margin="4dp"
         android:background="@drawable/bg_btn"
-        android:padding="10dp"
+        android:padding="12dp"
         android:src="@drawable/ic_stop"
+        android:tint="#FF8A65"
         android:contentDescription="Stop" />
     <ImageView
         android:id="@+id/btn_down"
@@ -32,7 +34,8 @@
         android:layout_weight="1"
         android:layout_margin="4dp"
         android:background="@drawable/bg_btn"
-        android:padding="10dp"
+        android:padding="12dp"
         android:src="@drawable/ic_down"
+        android:tint="#E6E6E9"
         android:contentDescription="Fermer" />
 </LinearLayout>

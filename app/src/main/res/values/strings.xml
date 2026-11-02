@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desc_widget_info">Allume ou éteint la lumière. Icône jaune quand elle est allumée.</string>
+    <string name="desc_widget_info_cover">Ouvrir, arrêter ou fermer le volet.</string>
+    <string name="desc_widget_info_tv">Allume ou éteint la télé et les LED, ensemble ou séparément.</string>
+    <string name="desc_widget_info_thermo">Température et humidité de la chambre. Appuyer pour actualiser.</string>
+    <string name="desc_widget_info_pc">Allume ou éteint le PC, avec confirmation.</string>
+    <string name="desc_widget_info_dash">Tout en un : thermomètre, lumière, PC, volet, télé et LED.</string>
+</resources>

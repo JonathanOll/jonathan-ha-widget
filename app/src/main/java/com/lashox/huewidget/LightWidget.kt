@@ -58,6 +58,7 @@ class LightWidget : AppWidgetProvider() {
             if (on != null) prefs.edit().putBoolean("last_on", on).apply()
             val color = if (state) Color.parseColor("#FFC107") else Color.parseColor("#8A8D94")
             views.setInt(R.id.icon, "setColorFilter", color)
+            views.setInt(R.id.icon, "setBackgroundResource", if (state) R.drawable.bg_pill_on else R.drawable.bg_pill_off)
             views.setInt(R.id.root, "setBackgroundResource",
                 if (state) R.drawable.bg_widget_on else R.drawable.bg_widget_off)
             val i = Intent(c, LightWidget::class.java).setAction(ACTION_TOGGLE)

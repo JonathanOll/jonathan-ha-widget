@@ -3,7 +3,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="Jonathan HA Widget"
-        android:icon="@drawable/ic_bulb"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
@@ -17,17 +18,55 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <receiver android:name=".LightWidget" android:exported="true">
+        <receiver android:name=".LightWidget" android:exported="true" android:label="Lumière">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />
         </receiver>
-        <receiver android:name=".CoverWidget" android:exported="true">
+        <receiver android:name=".CoverWidget" android:exported="true" android:label="Volet">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_cover" />
         </receiver>
+        <receiver android:name=".TvWidget" android:exported="true" android:label="Télé + LED">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_tv" />
+        </receiver>
+        <receiver android:name=".ThermoWidget" android:exported="true" android:label="Thermomètre">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_thermo" />
+        </receiver>
+        <receiver android:name=".PcWidget" android:exported="true" android:label="PC">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_pc" />
+        </receiver>
+        <receiver android:name=".DashWidget" android:exported="true" android:label="Tableau de bord">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_dash" />
+        </receiver>
+        <activity android:name=".ConfirmActivity" android:exported="false" android:theme="@style/ConfirmTheme"
+            android:excludeFromRecents="true" android:taskAffinity="" />
+        <service android:name=".LightTile" android:exported="true" android:label="Lumière"
+            android:icon="@drawable/ic_bulb" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service android:name=".TvTile" android:exported="true" android:label="Télé"
+            android:icon="@drawable/ic_bulb" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
