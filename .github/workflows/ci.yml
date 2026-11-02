@@ -28,6 +28,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Robolectric downloads android-all jars from Maven at test time; cache them so a
+      # transient network error doesn't fail the build.
+      - name: Cache Robolectric
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ hashFiles('app/build.gradle.kts', 'app/src/test/resources/robolectric.properties') }}
+
       - name: Tests unitaires, lint, build debug
         run: |
           chmod +x gradlew
